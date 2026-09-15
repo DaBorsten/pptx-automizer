@@ -264,13 +264,39 @@ export class Chart extends Shape implements IChart, IShapeAction {
     return relationTargets[0].filenameBase;
   }
 
+  /**
+   * Registers the copied chart parts in `[Content_Types].xml`.
+   *
+   * All style parts are optional: `copyChartStyleFiles` copies colors, style,
+   * themeOverride and user shapes only if the source chart relates to them.
+   * An Override for a part that was never copied stays behind as a dangling
+   * entry — PowerPoint ignores it, but OPC validators report one warning per
+   * orphan. `prepare` runs `copyChartStyleFiles` first, so the relations are
+   * known here.
+   */
   async appendTypes(): Promise<void> {
-    await this.appendChartExtensionToContentType();
-    await this.appendChartUserShapesToContentType();
+    if (this.hasWorkbook) {
+      await this.appendChartExtensionToContentType();
+    }
+
     await this.appendChartToContentType();
-    await this.appendColorToContentType();
-    await this.appendStyleToContentType();
-    await this.appendThemeOverrideToContentType();
+
+    if (this.hasStyleRelation('relTypeChartUserShapes')) {
+      await this.appendChartUserShapesToContentType();
+    }
+    if (this.hasStyleRelation('relTypeChartColorStyle')) {
+      await this.appendColorToContentType();
+    }
+    if (this.hasStyleRelation('relTypeChartStyle')) {
+      await this.appendStyleToContentType();
+    }
+    if (this.hasStyleRelation('relTypeChartThemeOverride')) {
+      await this.appendThemeOverrideToContentType();
+    }
+  }
+
+  hasStyleRelation(styleType: string): boolean {
+    return this.styleRelationFiles[styleType]?.length > 0;
   }
 
   async copyChartFiles(): Promise<void> {

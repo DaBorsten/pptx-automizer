@@ -25,7 +25,10 @@ import {
  *     hyperlink rels copied without a Type check);
  *  8. an a:hlinkClick/a:hlinkHover r:id that resolves to a structural
  *     relationship (slideLayout, notesSlide, slideMaster, theme) — an
- *     internally consistent mislink the dangling-id check cannot see.
+ *     internally consistent mislink the dangling-id check cannot see;
+ *  9. an [Content_Types].xml Override whose PartName is not in the package —
+ *     a content type registered for a part that was never written. Harmless
+ *     to PowerPoint, but OPC validators warn once per orphan.
  *
  * `knownIssues` are pre-existing library behaviors that PowerPoint tolerates.
  * They are reported for future cleanup work but do not fail tests:
@@ -239,6 +242,16 @@ export async function checkPptxInvariants(
         : '';
       if (!defaults.has(extension) && !overrides.has(`/${name}`)) {
         errors.push(`${name}: not covered by [Content_Types].xml`);
+      }
+    }
+
+    // 9. every Override points at a part that exists
+    for (const partName of overrides) {
+      if (!partSet.has(partName.replace(/^\//, ''))) {
+        errors.push(
+          `[Content_Types].xml: Override for ${partName}, but no such part ` +
+            `in the package`,
+        );
       }
     }
   }

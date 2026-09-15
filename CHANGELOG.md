@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 semver, with the pre-1.0 convention that **breaking changes bump the minor**.
 
+## [Unreleased]
+
+### Fixed
+
+- Copying a chart no longer registers `[Content_Types].xml` overrides for
+  style parts the chart does not have. `Chart.appendTypes()` unconditionally
+  wrote an `Override` for `colors{n}.xml`, `style{n}.xml`,
+  `themeOverride{n}.xml` and `drawings/drawing{n}.xml` (chart user shapes),
+  while `copyChartStyleFiles()` only copies each of those when the source
+  chart actually relates to it. Every chart without user shapes or a theme
+  override therefore left dangling overrides behind — 233 of them across the
+  test outputs, and OPC validators report one warning per orphan (PowerPoint
+  itself ignores them). The overrides now follow the copied parts, and the
+  `xlsx` default is only declared for charts that have a workbook. Package
+  invariant 9 fails any output that registers a content type for a missing
+  part.
+
 ## [0.9.3] — 2026-08-22
 
 Completes the certified 0.9.2 release candidate: the certification sweep that
