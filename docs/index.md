@@ -76,8 +76,6 @@ you pass. Nothing is applied until `await pres.write(...)` (or `.stream()` /
   — a condensed, self-contained guide for AI assistants consuming this
   library (also shipped in the npm package).
 
-## Ecosystem
-
-This project is accompanied by [automizer-data](https://github.com/singerla/automizer-data). You can use `automizer-data` to import, browse and transform .xlsx- or .sav-data into perfectly fitting graph or table data.
+## Support
 
 Thanks to all contributors! You are always welcome to share code, tipps and ideas. We appreciate all levels of expertise and encourage everyone to get involved. [Get started](https://github.com/singerla/pptx-automizer/issues/new)

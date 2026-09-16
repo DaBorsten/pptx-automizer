@@ -266,9 +266,9 @@ Recurring OOXML pitfalls when implementing such a helper:
 
 The published surface is what `src/index.ts` exports — most importantly the
 `modify.*` namespace, `Automizer` itself, and the callback/data types
-(`ChartData`, `TableData`, `TextStyle`, …). These are used by downstream projects
-(e.g. automizer-data). Treat them as semver-stable: additive changes are
-fine, renames/behavioral changes need a deprecation path and a ROADMAP entry.
+(`ChartData`, `TableData`, `TextStyle`, …). These are used by downstream
+projects. Treat them as semver-stable: additive changes are fine,
+renames/behavioral changes need a deprecation path and a ROADMAP entry.
 
 Internals (`XmlHelper`, `HasShapes`, shape classes) are exported or reachable but
 undocumented — refactoring them is allowed per the ROADMAP, but keep `modify.*`

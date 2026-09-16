@@ -71,9 +71,7 @@ The single most important concept: calls like `addSlide()` and `modifyElement()`
 
 Take a look into the [`__tests__`-directory](https://github.com/singerla/pptx-automizer/blob/main/__tests__) to see a lot of examples for several use cases. You will also find the example .pptx-files there.
 
-## Ecosystem and Support
-
-This project is accompanied by [automizer-data](https://github.com/singerla/automizer-data). You can use `automizer-data` to import, browse and transform .xlsx- or .sav-data into perfectly fitting graph or table data.
+## Support
 
 Thanks to all contributors! You are always welcome to share code, tipps and ideas. We appreciate all levels of expertise and encourage everyone to get involved. Whether you're a seasoned pro or just starting out, your contributions are invaluable. [Get started](https://github.com/singerla/pptx-automizer/issues/new)
 
