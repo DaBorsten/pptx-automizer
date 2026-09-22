@@ -109,6 +109,55 @@ export class ModifyTable {
     this.table.modify({
       'a:tblGrid': this.slice('a:gridCol', this.maxCols),
     });
+    this.fitRowsToGrid();
+  }
+
+  /**
+   * Make every <a:tr> hold exactly one <a:tc> per <a:gridCol>. Surplus
+   * template cells are ignored by PowerPoint, but LibreOffice then draws the
+   * table at the top edge of the slide instead of at its <a:off>.
+   *
+   * A spanned cell is followed by one hMerge="1" <a:tc> per covered column,
+   * so each <a:tc> is one grid position. A gridSpan reaching past the new
+   * grid width is clamped; rows shorter than the grid are padded with an
+   * empty clone of their last cell.
+   */
+  fitRowsToGrid() {
+    const rows = this.xml.getElementsByTagName('a:tr');
+    for (let r = 0; r < rows.length; r++) {
+      const row = rows.item(r);
+      const cells = Array.from(row.childNodes).filter(
+        (node) => (node as XmlElement).tagName === 'a:tc',
+      ) as XmlElement[];
+
+      cells.forEach((cell, position) => {
+        if (position >= this.maxCols) {
+          XmlHelper.remove(cell);
+          return;
+        }
+        const gridSpan = Number(cell.getAttribute('gridSpan'));
+        if (gridSpan > 1 && position + gridSpan > this.maxCols) {
+          const clamped = this.maxCols - position;
+          if (clamped > 1) {
+            cell.setAttribute('gridSpan', String(clamped));
+          } else {
+            cell.removeAttribute('gridSpan');
+          }
+        }
+      });
+
+      const lastCell = cells[Math.min(cells.length, this.maxCols) - 1];
+      for (let c = cells.length; lastCell && c < this.maxCols; c++) {
+        const padCell = lastCell.cloneNode(true) as XmlElement;
+        ['gridSpan', 'rowSpan', 'hMerge', 'vMerge'].forEach((attribute) =>
+          padCell.removeAttribute(attribute),
+        );
+        Array.from(padCell.getElementsByTagName('a:t')).forEach(
+          (text) => (text.textContent = ''),
+        );
+        XmlHelper.insertAfter(padCell, lastCell);
+      }
+    }
   }
 
   row = (index: number, children: ModificationTags): ModificationTags => {

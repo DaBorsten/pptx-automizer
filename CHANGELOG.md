@@ -8,6 +8,18 @@ semver, with the pre-1.0 convention that **breaking changes bump the minor**.
 
 ### Fixed
 
+- `setTable` no longer leaves table rows with more cells than the grid has
+  columns. When the data was narrower than the template table,
+  `ModifyTable.sliceCols()` trimmed `<a:tblGrid>` but every `<a:tr>` kept the
+  template's surplus `<a:tc>`. PowerPoint ignores the extra cells, but
+  LibreOffice draws such a table at the top edge of the slide instead of at
+  its `<a:off>`. Rows are now fitted to the grid: surplus cells are removed, a
+  `gridSpan` reaching past the new width is clamped, and a row shorter than
+  the grid is padded with an empty clone of its last cell. Also,
+  `ModifyTextHelper.content` now fills an `<a:t/>` that has no text node;
+  before, the value was silently dropped. Cell values are unchanged: `null`
+  and `''` clear a cell, and `undefined` keeps the template text.
+
 - Copying a chart no longer registers `[Content_Types].xml` overrides for
   style parts the chart does not have. `Chart.appendTypes()` unconditionally
   wrote an `Override` for `colors{n}.xml`, `style{n}.xml`,

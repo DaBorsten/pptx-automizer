@@ -92,8 +92,13 @@ export default class ModifyTextHelper {
   static content =
     (label: number | string | undefined) =>
     (element: XmlElement): void => {
-      if (label !== undefined && element.firstChild) {
-        element.firstChild.textContent = XmlHelper.sanitizeText(label);
+      if (label === undefined) return;
+      const text = XmlHelper.sanitizeText(label);
+      if (element.firstChild) {
+        element.firstChild.textContent = text;
+      } else {
+        // <a:t/> carries no text node to overwrite.
+        element.appendChild(element.ownerDocument.createTextNode(text));
       }
     };
 
