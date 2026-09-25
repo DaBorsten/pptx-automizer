@@ -1244,6 +1244,34 @@ of magnitude, so it is a genuine regression gate once fixed.
 
 ---
 
+## Bug track — a table cell added for a new column inherits the styled neighbour's run style
+
+Found 2026-09-25 in a generated ensemblio deck (a 4-column template table filled with 5 data
+columns; significance colours applied per cell through `TableRowStyle`).
+
+- 🐛 **Symptom.** Column 5 shows column 4's text colour. Where column 4 is coloured and column 5
+  should not be, column 5 is coloured anyway. In 2 of ~20 cases the colour even points the wrong
+  way (green = "higher" on a value below the total).
+- **Mechanism.** `ModifyTable.setRows()` addresses `a:tc` by index. For a missing index,
+  `ModifyXmlHelper` clones the row's **last sibling** (`sourceSibling = lastSibling`, no
+  `fromPrevious` without `expand`). That sibling has already been modified in the same pass, so
+  its `a:rPr` carries the colour just applied. `cell()` then calls
+  `ModifyTextHelper.style(rowStyle)`, and with an empty style it returns without touching
+  `a:rPr` — the cloned `a:solidFill` survives. `fitRowsToGrid()`'s pad cells (a3a9dce) take the
+  same path and share the problem.
+- **Fix options, in order of preference.**
+  1. Clone new cells from the row's cell **as it was in the template** (capture the pristine
+     `a:tc` per row before `setRows()` modifies it), not from the already-modified last sibling.
+  2. Or, on a newly created cell only, strip the run-level overrides the table style can set
+     (`a:solidFill`, `b`, `i`, `u` on `a:rPr`) before `cell()` applies the row style.
+  Either way an explicitly styled cell keeps its style; only inherited leftovers go.
+- **Test.** Template table 2×4, data 2×5, style only `[0][3]` (red): expect `[0][4]` without a
+  `solidFill`, `[0][3]` red, `[1][*]` unstyled. Same with `expand` on and off.
+- **Workaround used meanwhile.** Size template tables to the maximum column count; slicing
+  columns (with `fitRowsToGrid`) is safe, adding them is not.
+
+---
+
 ## Suggested sequencing
 
 ```
