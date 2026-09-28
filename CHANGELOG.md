@@ -4,7 +4,14 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 semver, with the pre-1.0 convention that **breaking changes bump the minor**.
 
-## [Unreleased]
+## [0.9.4] — 2026-09-28
+
+Table fill fidelity, a `cleanup: true` crash on fallback-less SVG pictures,
+and dangling chart content types. No API changes: `setTable` accepts the same
+data as before and writes the same XML for values without a line break; the
+row-fitting fix only affects tables that were filled with fewer columns than
+the template has. See "Known issues" for the one `setTable` case that is
+still open.
 
 ### Added
 
@@ -59,6 +66,16 @@ semver, with the pre-1.0 convention that **breaking changes bump the minor**.
   `xlsx` default is only declared for charts that have a workbook. Package
   invariant 9 fails any output that registers a content type for a missing
   part.
+
+### Known issues
+
+- `setTable` with **more** data columns than the template table has: the
+  cells added for the extra columns are cloned from the row's last cell
+  *after* it was filled, so a per-cell `TableRowStyle` on that neighbour
+  (colour, bold) carries over into the new column. Pre-existing, not new in
+  this release; tracked in `ROADMAP.md` ("a table cell added for a new column
+  inherits the styled neighbour's run style"). Size template tables to the
+  largest column count you fill, or grow them with `expand` before filling.
 
 ## [0.9.3] — 2026-08-22
 

@@ -697,6 +697,14 @@ slide.modifyElement('TableDefault', [
 ]);
 ```
 
+Data that is **narrower** than the template table trims the table to the data:
+surplus grid columns and their cells are removed, and a row that is shorter than
+the grid is padded with an empty clone of its last cell. Data that is **wider**
+than the template adds cells by cloning the row's last cell *after* it was
+filled, so a per-cell style applied to that neighbour (colour, bold) carries over
+into the added column. Size template tables to the largest column count you fill,
+or grow them with `expand` (below) before filling.
+
 ### Table helpers
 
 `ModifyTableHelper` provides rich control over existing tables.

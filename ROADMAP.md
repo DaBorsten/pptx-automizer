@@ -1246,7 +1246,7 @@ of magnitude, so it is a genuine regression gate once fixed.
 
 ## Bug track — a table cell added for a new column inherits the styled neighbour's run style
 
-Found 2026-09-25 in a generated ensemblio deck (a 4-column template table filled with 5 data
+Found 2026-09-25 in a generated downstream deck (a 4-column template table filled with 5 data
 columns; significance colours applied per cell through `TableRowStyle`).
 
 - 🐛 **Symptom.** Column 5 shows column 4's text colour. Where column 4 is coloured and column 5
