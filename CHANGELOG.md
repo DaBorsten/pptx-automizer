@@ -6,6 +6,21 @@ semver, with the pre-1.0 convention that **breaking changes bump the minor**.
 
 ## [Unreleased]
 
+### Added
+
+- `setTable` writes forced line breaks inside a cell. A `\n` in a cell value
+  (or `\v`/U+000B, which PowerPoint hands out for Shift+Enter) used to land
+  as a literal character in the cell's single `<a:t>`, so a head like
+  "Stick (solid)" could not be split over two lines. Each line is now a
+  clone of the cell's run, separated by an `<a:br/>` in the same paragraph;
+  runs and breaks carry a copy of the cell's `<a:rPr>`, including the
+  `TableRowStyle` of that cell. Consecutive breaks give an empty line with no
+  run of its own, as in `setMultiText`. Soft breaks are now removed together
+  with the surplus runs a cell value replaces, and a row-padding cell (see
+  below) is cleared of them too, so a cell cloned from a broken neighbour
+  does not inherit its breaks. Values without a break write the same XML as
+  before.
+
 ### Fixed
 
 - `setTable` no longer leaves table rows with more cells than the grid has

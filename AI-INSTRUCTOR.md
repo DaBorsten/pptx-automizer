@@ -685,6 +685,18 @@ const result = await pres.addSlide('tables', 3, (slide) => {
 
 Note that the table has to be a **native table** in the template — a grouped-shape "fake table" cannot be filled with `setTable`.
 
+A `\n` in a cell value is a line break within the cell (`\v`, what PowerPoint
+uses for Shift+Enter, works the same). It becomes a soft break (`<a:br/>`) in
+the cell's paragraph, and every line keeps the cell's text style:
+
+```ts
+slide.modifyElement('TableDefault', [
+  modify.setTable({
+    body: [{ label: 'head', values: ['Stick\n(solid)', 'Spray'] }],
+  }),
+]);
+```
+
 ### Table helpers
 
 `ModifyTableHelper` provides rich control over existing tables.

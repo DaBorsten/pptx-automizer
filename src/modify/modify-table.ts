@@ -155,6 +155,9 @@ export class ModifyTable {
         Array.from(padCell.getElementsByTagName('a:t')).forEach(
           (text) => (text.textContent = ''),
         );
+        Array.from(padCell.getElementsByTagName('a:br')).forEach((br) =>
+          XmlHelper.remove(br),
+        );
         XmlHelper.insertAfter(padCell, lastCell);
       }
     }
@@ -193,6 +196,7 @@ export class ModifyTable {
           'a:r': {
             collection: (collection: XmlElementCollection) => {
               XmlHelper.sliceCollection(collection, 1);
+              this.breakLines(collection.item(0) as XmlElement);
             },
           },
         },
@@ -202,6 +206,57 @@ export class ModifyTable {
       },
     };
   };
+
+  /**
+   * Turn line breaks in a cell value into soft line breaks.
+   *
+   * A cell is written into its first run only (the others are sliced away
+   * before), so `<a:t>` may now hold a `\n` - or `\u000B`, which
+   * `XmlHelper.sanitizeText` already maps to `\n`. PPTX has no in-run line
+   * break: each line becomes a clone of the run, separated by an `<a:br/>`
+   * that carries a copy of the run's `<a:rPr>`, all in the same paragraph.
+   *
+   * Soft breaks separated the runs that were sliced away, so they go too;
+   * otherwise a cell cloned from a broken neighbour would keep dangling
+   * breaks. As in `MultiTextHelper`, an empty line gets no run of its own.
+   */
+  breakLines(run: XmlElement): void {
+    const paragraph = run?.parentNode as XmlElement;
+    if (!paragraph) return;
+
+    const txBody = paragraph.parentNode as XmlElement;
+    Array.from((txBody || paragraph).getElementsByTagName('a:br')).forEach(
+      (br) => XmlHelper.remove(br as XmlElement),
+    );
+
+    const text = run.getElementsByTagName('a:t').item(0);
+    // eslint-disable-next-line no-control-regex -- U+000B is one of the breaks we split on
+    const lines = (text?.textContent || '').split(/\r\n|[\r\n\u000B]/);
+    if (lines.length < 2) return;
+
+    const rPr = XmlHelper.getFirstDirectChild(run, ['a:rPr']);
+    let previous = run;
+    lines.forEach((line, index) => {
+      if (index > 0) {
+        const br = run.ownerDocument.createElement('a:br');
+        if (rPr) {
+          br.appendChild(rPr.cloneNode(true));
+        }
+        previous = XmlHelper.insertAfter(br, previous);
+      }
+      if (line === '') return;
+
+      const lineRun = index === 0 ? run : (run.cloneNode(true) as XmlElement);
+      ModifyTextHelper.content(line)(lineRun.getElementsByTagName('a:t')[0]);
+      if (index > 0) {
+        previous = XmlHelper.insertAfter(lineRun, previous);
+      }
+    });
+
+    if (lines[0] === '') {
+      XmlHelper.remove(run);
+    }
+  }
 
   setCellStyle(style: TableRowStyle) {
     const cellProps: Modification & {
