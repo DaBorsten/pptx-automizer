@@ -35,6 +35,18 @@ semver, with the pre-1.0 convention that **breaking changes bump the minor**.
   before, the value was silently dropped. Cell values are unchanged: `null`
   and `''` clear a cell, and `undefined` keeps the template text.
 
+- Copying a slide that contains an SVG picture written **without a raster
+  fallback** no longer throws `TypeError: Cannot read properties of undefined
+  (reading 'filename')` under `cleanup: true`. Such a picture is a bare
+  `<a:blip>` with no `r:embed` — the only relationship lives on the
+  `<asvg:svgBlip>` in its `extLst`. `ContentTracker` pushed a tracked target
+  for the attribute-less element anyway; it resolved to no relationship and
+  the `undefined` reached the collector. The tracker now skips elements that
+  do not carry the tracked attribute, and `getRelatedContents()` drops
+  unresolvable targets instead of passing them on (`collect()` and
+  `addAndAnalyze()` both dereferenced them). The svg media is unaffected — it
+  is tracked through the `asvg:svgBlip` relation tag with its real rId.
+
 - Copying a chart no longer registers `[Content_Types].xml` overrides for
   style parts the chart does not have. `Chart.appendTypes()` unconditionally
   wrote an `Override` for `colors{n}.xml`, `style{n}.xml`,

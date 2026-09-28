@@ -113,6 +113,13 @@ export class ContentTracker {
     for (const trackedRelation of trackedRelations) {
       for (const target of trackedRelation.targets) {
         const trackedRelationInfo = await target.getRelatedContent();
+
+        // getRelatedContent() resolves to undefined if the rId matches no
+        // relationship, e.g. an external TargetMode. Both callers read
+        // .filename off the result, so an unresolvable target is skipped here
+        // instead of crashing them.
+        if (!trackedRelationInfo) continue;
+
         relatedContents.push(trackedRelationInfo);
       }
     }
@@ -179,10 +186,18 @@ export class ContentTracker {
       this.archive,
       file,
       (element, rels) => {
+        const rId = element.getAttribute(attribute);
+
+        // An <a:blip> without r:embed is an svg picture that has no raster
+        // fallback: the relationship belongs to the <asvg:svgBlip> inside its
+        // extLst and is tracked by its own relationTag. There is nothing to
+        // resolve for the outer element.
+        if (!rId) return;
+
         rels.push({
           file,
           filename,
-          rId: element.getAttribute(attribute),
+          rId,
           type: relationTag.type,
         });
       },
